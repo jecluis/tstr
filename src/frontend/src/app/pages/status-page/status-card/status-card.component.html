@@ -1,0 +1,46 @@
+<!--
+ tstr - testing stuff
+ Copyright (C) 2022 SUSE LLC
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU Affero General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+ 
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU Affero General Public License for more details.
+-->
+<div class="card shadow-sm" style="width: 18rem">
+  <div class="card-header">
+    <i class="mdi mdi-source-branch" *ngIf="entry?.type === 'branch'"></i>
+    <i class="mdi mdi-source-pull" *ngIf="entry?.type === 'pr'"></i>
+    <span>{{entry?.name}}</span>
+  </div>
+  <div class="card-body">
+    <div *ngIf="isDone()">
+      <div class="row">
+        <div class="col">benchmark:</div>
+        <div class="col">
+          <span *ngIf="isBaseline()">baseline</span>
+          <span *ngIf="isBelowBaseline()">below baseline</span>
+          <span *ngIf="isAboveBaseline()">above baseline</span>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col">s3tests:</div>
+        <div class="col">{{entry?.s3testsPercent}}%</div>
+      </div>
+      <div class="row">
+        <div class="col">last run:</div>
+        <div class="col">{{entry?.lastUpdated|date}}</div>
+      </div>
+    </div>
+    <div *ngIf="isScheduled()">
+      Waiting...
+    </div>
+    <div *ngIf="isRunning()">
+      Running...
+    </div>
+  </div>
+</div>

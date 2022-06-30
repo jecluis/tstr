@@ -1,0 +1,49 @@
+<!--
+ tstr - testing stuff
+ Copyright (C) 2022 SUSE LLC
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU Affero General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+ 
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU Affero General Public License for more details.
+-->
+<header class="navbar navbar-expand navbar-dark bg-dark px-4 flex-column
+               flex-md-row tstr-navbar">
+  <a routerLink="/" aria-label="tstr" class="navbar-brand me-md-2 me-0">tstr</a>
+  <div class="navbar-nav-scroll">
+    <ul class="navbar-nav flex-row">
+      <li class="nav-item">
+        <a class="nav-link" aria-label="baseline"
+           routerLink="/baseline">
+          Baseline
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" aria-label="status" routerLink="/status">Status</a>
+      </li>
+    </ul>
+  </div>
+
+  <div class="navbar-nav flex-row ms-md-auto me-4">
+    <ul class="navbar-nav m-md-auto">
+      <li class="nav-item">
+        <a class="nav-link"
+           href="https://github.com/aquarist-labs/ceph.git"
+           target="_blank"
+        >
+          <i class="mdi mdi-github"></i>
+          <span style="margin-left: 5px">aquarist-labs/ceph</span>
+        </a>
+      </li>
+    </ul>
+  </div>
+
+</header>
+
+<main class="col-12 col-lg-12">
+  <router-outlet></router-outlet>
+</main>
