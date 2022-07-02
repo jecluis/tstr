@@ -12,3 +12,89 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Affero General Public License for more details.
 
+import logging.config
+from fastapi import FastAPI
+from fastapi.logger import logger
+import uvicorn  # type: ignore
+
+
+def setup_logging(lvl: str) -> None:
+    logging_config = {
+        "version": 1,
+        "disable_existing_loggers": False,
+        "formatters": {
+            "simple": {
+                "format": (
+                    "[%(levelname)-5s] %(asctime)s -- "
+                    "%(module)s -- %(message)s"
+                ),
+                "datefmt": "%Y-%m-%dT%H:%M:%S",
+            },
+            "colorized": {
+                "()": "uvicorn.logging.ColourizedFormatter",
+                "format": (
+                    "%(levelprefix)s %(asctime)s -- "
+                    "%(module)s -- %(message)s"
+                ),
+                "datefmt": "%Y-%m-%d %H:%M:%S",
+            },
+        },
+        "handlers": {
+            "console": {
+                "level": lvl,
+                "class": "logging.StreamHandler",
+                "formatter": "colorized",
+            },
+            "log_file": {
+                "level": "DEBUG",
+                "class": "logging.handlers.RotatingFileHandler",
+                "formatter": "simple",
+                "filename": "tstr.log",
+                "maxBytes": 10485760,
+                "backupCount": 1,
+            },
+        },
+        "loggers": {
+            "uvicorn": {
+                "level": "DEBUG",
+                "handlers": ["console", "log_file"],
+                "propagate": "no",
+            }
+        },
+        "root": {"level": "DEBUG", "handlers": ["console", "log_file"]},
+    }
+    logging.config.dictConfig(logging_config)
+
+
+setup_logging("DEBUG")
+
+
+api_tags = [
+    {
+        "name": "workqueue",
+        "description": "Work Queue related operations.",
+    },
+]
+
+app = FastAPI(docs_url=None)
+api = FastAPI(
+    title="tstr",
+    description="Web-based testing framework.",
+    version="0.0.1",
+    openapi_tags=api_tags,
+)
+
+
+@app.on_event("startup")  # type: ignore
+async def on_startup():
+    logger.info("starting tstr server")
+
+
+@app.on_event("shutdown")  # type: ignore
+async def on_shutdown():
+    logger.info("shutting down tstr server.")
+
+
+app.mount("/api", api, name="API")
+
+# uvicorn.run(app, host="0.0.0.0", port=31337)  # type: ignore
