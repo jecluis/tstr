@@ -1,5 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { BenchmarkEnum, StateEnum, StatusEntry } from '../status-page.service';
+import { BenchmarkEnum, StateEnum, StatusEntry } from '../status-page.types';
 
 @Component({
   selector: 'tstr-status-card',

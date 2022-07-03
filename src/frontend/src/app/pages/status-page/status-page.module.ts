@@ -13,7 +13,7 @@ import { StatusCardComponent } from './status-card/status-card.component';
   ],
   imports: [
     CommonModule,
-    StatusPageRoutingModule
+    StatusPageRoutingModule,
   ]
 })
 export class StatusPageModule { }

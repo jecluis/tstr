@@ -11,34 +11,27 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Affero General Public License for more details.
  */
+import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import { Observable } from 'rxjs';
 
-export enum BenchmarkEnum {
-  None = 0,
-  Baseline = 1,
-  AboveBaseline = 2,
-  BelowBaseline = 3,
-}
 
-export enum StateEnum {
-  Done = 0,
-  Running = 1,
-  Scheduled = 2,
-}
-
-export type StatusEntry = {
-  name: string;
-  type: "branch" | "pr";
-  benchmark?: BenchmarkEnum;
-  s3testsPercent?: number;
-  lastUpdated?: Date;
-  state: StateEnum;
+export type HeadEntry = {
+  head: string;
+  source: string;
+  sha: string;
+  is_pull_request: boolean;
+  id?: number;
 };
 
 @Injectable({
   providedIn: 'root'
 })
-export class StatusPageService {
+export class HeadsService {
 
-  constructor() { }
+  constructor(private http: HttpClient) { }
+
+  getHeads(): Observable<HeadEntry[]> {
+    return this.http.get<HeadEntry[]>("/api/heads/");
+  }
 }
