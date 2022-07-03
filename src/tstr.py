@@ -17,6 +17,8 @@ from fastapi import FastAPI
 from fastapi.logger import logger
 import uvicorn  # type: ignore
 
+from libtstr.api import heads
+
 
 def setup_logging(lvl: str) -> None:
     logging_config = {
@@ -74,6 +76,10 @@ api_tags = [
         "name": "workqueue",
         "description": "Work Queue related operations.",
     },
+    {
+        "name": "heads",
+        "description": "Branches and PR related operations.",
+    },
 ]
 
 app = FastAPI(docs_url=None)
@@ -95,6 +101,7 @@ async def on_shutdown():
     logger.info("shutting down tstr server.")
 
 
+api.include_router(heads.router)
 app.mount("/api", api, name="API")
 
 # uvicorn.run(app, host="0.0.0.0", port=31337)  # type: ignore

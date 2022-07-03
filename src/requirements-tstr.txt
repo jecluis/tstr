@@ -1,4 +1,5 @@
 fastapi==0.78.0
 pydantic==1.9.1
 uvicorn[standard]
+PyGithub==1.55
 
