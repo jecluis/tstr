@@ -11,20 +11,11 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Affero General Public License for more details.
 
-from typing import List
-from fastapi import APIRouter, Depends
+from pydantic import BaseModel, Field
 
-# from fastapi.logger import logger
-
-from libtstr.api import githubmgr
-from libtstr.gh import GithubHead, GithubMgr
+from libtstr.gh import GithubConfig
 
 
-router = APIRouter(prefix="/heads", tags=["heads"])
-
-
-@router.get(
-    "/", name="Obtain currently open heads.", response_model=List[GithubHead]
-)
-async def get_heads(gh: GithubMgr = Depends(githubmgr)) -> List[GithubHead]:
-    return await gh.get_heads()
+class TstrConfig(BaseModel):
+    gh: GithubConfig
+    log_level: str = Field(default="INFO")

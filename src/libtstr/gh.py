@@ -16,6 +16,11 @@ import github
 from pydantic import BaseModel
 
 
+class GithubConfig(BaseModel):
+    token: str
+    repo: str
+
+
 class GithubHead(BaseModel):
     head: str
     source: str
@@ -26,12 +31,14 @@ class GithubHead(BaseModel):
 
 class GithubMgr:
 
+    config: GithubConfig
     gh: github.Github
     repo: str
 
-    def __init__(self, repo: str) -> None:
-        self.gh = github.Github()
-        self.repo = repo
+    def __init__(self, config: GithubConfig) -> None:
+        self.config = config
+        self.gh = github.Github(config.token)
+        self.repo = config.repo
 
     async def get_heads(self) -> List[GithubHead]:
         heads: List[GithubHead] = []

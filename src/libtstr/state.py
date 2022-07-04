@@ -13,7 +13,12 @@
 
 import databases
 
+from libtstr.gh import GithubMgr
+from libtstr.config import TstrConfig
+
 
 class TstrState:
 
+    config: TstrConfig
     database: databases.Database
+    github: GithubMgr

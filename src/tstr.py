@@ -19,10 +19,12 @@ from typing import Optional
 from fastapi import FastAPI
 from fastapi.logger import logger
 import uvicorn  # type: ignore
+from libtstr.gh import GithubMgr
 
 from libtstr.misc import setup_logging
 from libtstr.db import database
 from libtstr.state import TstrState
+from libtstr.config import TstrConfig
 
 # routers
 #
@@ -57,7 +59,9 @@ _shutting_down: bool = False
 _main_task: Optional[asyncio.Task] = None
 
 
-async def tstr_main_task(app: FastAPI) -> None:
+async def tstr_main_task(app: FastAPI, state: TstrState) -> None:
+
+    state.github = GithubMgr(state.config.gh)
 
     while not _shutting_down:
         logger.debug("tstr main task")
@@ -68,18 +72,22 @@ async def tstr_main_task(app: FastAPI) -> None:
 
 @app.on_event("startup")  # type: ignore
 async def on_startup():
-    setup_logging("DEBUG")
+    config = TstrConfig.parse_file("tstr.cfg")
+
+    setup_logging(config.log_level)
     logger.info("starting tstr server")
+    logger.debug(f"config: {config}")
 
     state = TstrState()
+    state.config = config
     state.database = database
-    app.state.tstr = state
+    api.state.tstr = state
 
     if not state.database.is_connected:
         await state.database.connect()
 
     global _main_task
-    _main_task = asyncio.create_task(tstr_main_task(app))
+    _main_task = asyncio.create_task(tstr_main_task(app, state))
 
 
 @app.on_event("shutdown")  # type: ignore
@@ -91,7 +99,7 @@ async def on_shutdown():
     if _main_task is not None:
         await _main_task
 
-    state: TstrState = app.state.tstr
+    state: TstrState = api.state.tstr
     if state.database.is_connected:
         await state.database.disconnect()
 
