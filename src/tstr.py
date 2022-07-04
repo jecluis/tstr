@@ -12,60 +12,13 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Affero General Public License for more details.
 
-import logging.config
 from fastapi import FastAPI
 from fastapi.logger import logger
 import uvicorn  # type: ignore
 
 from libtstr.api import heads
 
-
-def setup_logging(lvl: str) -> None:
-    logging_config = {
-        "version": 1,
-        "disable_existing_loggers": False,
-        "formatters": {
-            "simple": {
-                "format": (
-                    "[%(levelname)-5s] %(asctime)s -- "
-                    "%(module)s -- %(message)s"
-                ),
-                "datefmt": "%Y-%m-%dT%H:%M:%S",
-            },
-            "colorized": {
-                "()": "uvicorn.logging.ColourizedFormatter",
-                "format": (
-                    "%(levelprefix)s %(asctime)s -- "
-                    "%(module)s -- %(message)s"
-                ),
-                "datefmt": "%Y-%m-%d %H:%M:%S",
-            },
-        },
-        "handlers": {
-            "console": {
-                "level": lvl,
-                "class": "logging.StreamHandler",
-                "formatter": "colorized",
-            },
-            "log_file": {
-                "level": "DEBUG",
-                "class": "logging.handlers.RotatingFileHandler",
-                "formatter": "simple",
-                "filename": "tstr.log",
-                "maxBytes": 10485760,
-                "backupCount": 1,
-            },
-        },
-        "loggers": {
-            "uvicorn": {
-                "level": "DEBUG",
-                "handlers": ["console", "log_file"],
-                "propagate": "no",
-            }
-        },
-        "root": {"level": "DEBUG", "handlers": ["console", "log_file"]},
-    }
-    logging.config.dictConfig(logging_config)
+from libtstr.misc import setup_logging
 
 
 setup_logging("DEBUG")
