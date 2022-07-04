@@ -12,16 +12,21 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Affero General Public License for more details.
 
+# pyright: reportMissingTypeArgument=false
+
+import asyncio
+from typing import Optional
 from fastapi import FastAPI
 from fastapi.logger import logger
 import uvicorn  # type: ignore
 
-from libtstr.api import heads
-
 from libtstr.misc import setup_logging
+from libtstr.db import database
+from libtstr.state import TstrState
 
-
-setup_logging("DEBUG")
+# routers
+#
+from libtstr.api import heads
 
 
 api_tags = [
@@ -44,17 +49,51 @@ api = FastAPI(
 )
 
 
+api.include_router(heads.router)
+app.mount("/api", api, name="API")
+
+
+_shutting_down: bool = False
+_main_task: Optional[asyncio.Task] = None
+
+
+async def tstr_main_task(app: FastAPI) -> None:
+
+    while not _shutting_down:
+        logger.debug("tstr main task")
+        await asyncio.sleep(1.0)
+
+    logger.info("shutting down main tstr task.")
+
+
 @app.on_event("startup")  # type: ignore
 async def on_startup():
+    setup_logging("DEBUG")
     logger.info("starting tstr server")
+
+    state = TstrState()
+    state.database = database
+    app.state.tstr = state
+
+    if not state.database.is_connected:
+        await state.database.connect()
+
+    global _main_task
+    _main_task = asyncio.create_task(tstr_main_task(app))
 
 
 @app.on_event("shutdown")  # type: ignore
 async def on_shutdown():
     logger.info("shutting down tstr server.")
 
+    global _shutting_down
+    _shutting_down = True
+    if _main_task is not None:
+        await _main_task
 
-api.include_router(heads.router)
-app.mount("/api", api, name="API")
+    state: TstrState = app.state.tstr
+    if state.database.is_connected:
+        await state.database.disconnect()
+
 
 # uvicorn.run(app, host="0.0.0.0", port=31337)  # type: ignore
