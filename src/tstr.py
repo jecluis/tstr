@@ -15,6 +15,9 @@
 # pyright: reportMissingTypeArgument=false
 
 import asyncio
+import os
+from pathlib import Path
+import sys
 from typing import Optional
 from fastapi import FastAPI
 from fastapi.logger import logger
@@ -72,7 +75,16 @@ async def tstr_main_task(app: FastAPI, state: TstrState) -> None:
 
 @app.on_event("startup")  # type: ignore
 async def on_startup():
-    config = TstrConfig.parse_file("tstr.cfg")
+    cfgpath = Path(os.getenv("TSTR_CONFIG", "tstr.cfg"))
+    if not cfgpath.exists() or not cfgpath.is_file():
+        print("missing configuration file.")
+        sys.exit(1)
+
+    try:
+        config = TstrConfig.parse_file(cfgpath)
+    except:
+        print("unable to parse config file")
+        sys.exit(1)
 
     setup_logging(config.log_level)
     logger.info("starting tstr server")
