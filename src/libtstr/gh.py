@@ -11,9 +11,13 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Affero General Public License for more details.
 
+# pyright: reportUnknownMemberType=false
+
+import asyncio
 from typing import List, Optional
 import github
 from pydantic import BaseModel
+from fastapi.logger import logger
 
 
 class GithubConfig(BaseModel):
@@ -34,13 +38,36 @@ class GithubMgr:
     config: GithubConfig
     gh: github.Github
     repo: str
+    _heads: List[GithubHead]
+    _is_running: bool
+    _task: Optional[asyncio.Task]  # type: ignore
 
     def __init__(self, config: GithubConfig) -> None:
         self.config = config
         self.gh = github.Github(config.token)
         self.repo = config.repo
+        self._heads = []
+        self._is_running = False
+        self._task = None
 
-    async def get_heads(self) -> List[GithubHead]:
+    async def start(self):
+        self._is_running = True
+        self._task = asyncio.create_task(self._main_task())
+
+    async def stop(self):
+        self._is_running = False
+        if self._task is not None:
+            await self._task
+            self._task = None
+
+    async def _main_task(self) -> None:
+
+        while self._is_running:
+            logger.debug("obtaining github heads")
+            self._heads = await self._get_heads()
+            await asyncio.sleep(30.0)
+
+    async def _get_heads(self) -> List[GithubHead]:
         heads: List[GithubHead] = []
 
         repo = self.gh.get_repo(self.repo)
@@ -70,3 +97,6 @@ class GithubMgr:
             )
 
         return heads
+
+    def get_heads(self) -> List[GithubHead]:
+        return self._heads

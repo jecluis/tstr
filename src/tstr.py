@@ -65,12 +65,14 @@ _main_task: Optional[asyncio.Task] = None
 async def tstr_main_task(app: FastAPI, state: TstrState) -> None:
 
     state.github = GithubMgr(state.config.gh)
+    await state.github.start()
 
     while not _shutting_down:
         logger.debug("tstr main task")
         await asyncio.sleep(1.0)
 
     logger.info("shutting down main tstr task.")
+    await state.github.stop()
 
 
 @app.on_event("startup")  # type: ignore
