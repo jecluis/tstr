@@ -41,5 +41,4 @@ class TstrHead(ormar.Model):
     what: HeadStateEnum = ormar.Enum(enum_class=HeadStateEnum)
 
 
-if not TstrHead.Meta.table.exists(engine):  # type: ignore
-    TstrHead.Meta.table.create(engine)
+TstrHead.Meta.table.create(engine, checkfirst=True)
