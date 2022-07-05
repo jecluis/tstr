@@ -19,6 +19,8 @@ import github
 from pydantic import BaseModel
 from fastapi.logger import logger
 
+from libtstr.orm.heads import TstrHead, HeadStateEnum
+
 
 class GithubConfig(BaseModel):
     token: str
@@ -31,6 +33,7 @@ class GithubHead(BaseModel):
     sha: str
     is_pull_request: bool
     id: Optional[int]
+    state: Optional[str]
 
 
 class GithubMgr:
@@ -63,9 +66,60 @@ class GithubMgr:
     async def _main_task(self) -> None:
 
         while self._is_running:
-            logger.debug("obtaining github heads")
-            self._heads = await self._get_heads()
+            logger.debug("updating github heads")
+            # self._heads = await self._get_heads()
+            await self._update_heads()
+
             await asyncio.sleep(30.0)
+
+    async def _update_heads(self) -> None:
+        logger.info("updating heads")
+        heads = await self._get_heads()
+        cnt_new: int = 0
+        cnt_closed: int = 0
+        cnt_skipped: int = 0
+        for head in heads:
+            entries = await TstrHead.objects.filter(
+                ((TstrHead.sha == head.sha) & (TstrHead.head == head.head))
+            ).all()
+            if len(entries) == 0:
+                # add new head
+                new_head = TstrHead(
+                    sha=head.sha,
+                    head=head.head,
+                    source=head.source,
+                    is_pull_request=head.is_pull_request,
+                    pr_id=(head.id if head.is_pull_request else -1),
+                    what=HeadStateEnum.NEW,
+                )
+                await new_head.save()
+                cnt_new = cnt_new + 1
+                continue
+            if head.state != "closed":
+                # we don't care what state we are in then, just move on
+                cnt_skipped = cnt_skipped + 1
+                continue
+            is_closed = False
+            for entry in entries:
+                if entry.what == HeadStateEnum.CLOSED:
+                    is_closed = True
+                    break
+            if not is_closed:
+                # add new head, mark it closed.
+                new_head = TstrHead(
+                    sha=head.sha,
+                    head=head.head,
+                    source=head.source,
+                    is_pull_request=head.is_pull_request,
+                    pr_id=(head.id if head.is_pull_request else -1),
+                    what=HeadStateEnum.CLOSED,
+                )
+                await new_head.save()
+                cnt_closed = cnt_closed + 1
+
+        logger.info(
+            f"new: {cnt_new}, closed: {cnt_closed}, skipped: {cnt_skipped}"
+        )
 
     async def _get_heads(self) -> List[GithubHead]:
         heads: List[GithubHead] = []
@@ -81,10 +135,11 @@ class GithubMgr:
                 sha=sha,
                 is_pull_request=False,
                 id=None,
+                state=None,
             )
         )
 
-        pulls = repo.get_pulls(state="open")
+        pulls = repo.get_pulls()
         for pr in pulls:
             heads.append(
                 GithubHead(
@@ -93,10 +148,28 @@ class GithubMgr:
                     sha=pr.head.sha,
                     is_pull_request=True,
                     id=pr.number,
+                    state=pr.state,
                 )
             )
 
         return heads
 
-    def get_heads(self) -> List[GithubHead]:
-        return self._heads
+    async def get_heads(self) -> List[GithubHead]:
+        heads: List[GithubHead] = []
+        db_heads = await TstrHead.objects.all()
+        for head in db_heads:
+            pr_id: Optional[int] = head.pr_id if head.pr_id > 0 else None
+            pr_state: str = (
+                "open" if head.what != HeadStateEnum.CLOSED else "closed"
+            )
+            heads.append(
+                GithubHead(
+                    head=head.head,
+                    source=head.source,
+                    sha=head.sha,
+                    is_pull_request=head.is_pull_request,
+                    id=pr_id,
+                    state=pr_state,
+                )
+            )
+        return heads

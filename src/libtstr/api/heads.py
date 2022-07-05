@@ -27,4 +27,4 @@ router = APIRouter(prefix="/heads", tags=["heads"])
     "/", name="Obtain currently open heads.", response_model=List[GithubHead]
 )
 async def get_heads(gh: GithubMgr = Depends(githubmgr)) -> List[GithubHead]:
-    return gh.get_heads()
+    return await gh.get_heads()
