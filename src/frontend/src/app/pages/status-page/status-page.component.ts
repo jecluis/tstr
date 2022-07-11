@@ -12,12 +12,21 @@
  * GNU Affero General Public License for more details.
  */
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { catchError, EMPTY, finalize, Observable, Subscription, take, timer } from 'rxjs';
+import {
+  catchError,
+  EMPTY,
+  finalize,
+  Observable,
+  Subscription,
+  take,
+  timer
+} from 'rxjs';
 import {
   BranchEntry,
   CommitEntry,
   HeadsService
 } from 'src/app/shared/services/api/heads.service';
+import { WorkqueueService, WQItem } from 'src/app/shared/services/api/workqueue.service';
 import { BenchmarkEnum, CommitStatusEntry, StateEnum, StatusEntry } from './status-page.types';
 
 @Component({
@@ -50,19 +59,32 @@ export class StatusPageComponent implements OnInit, OnDestroy {
 
   private headsData: Observable<BranchEntry[]>;
   private headsSubscription?: Subscription;
-  private timerSubscription?: Subscription;
+  private headsTimerSubscription?: Subscription;
 
-  constructor(private svc: HeadsService) {
-    this.headsData = svc.getHeads();
+  private wqData: Observable<WQItem[]>;
+  private wqSubscription?: Subscription;
+  private wqTimerSubscription?: Subscription;
+
+  public wqItems: WQItem[] = [];
+
+  constructor(
+    private headsSvc: HeadsService,
+    private wqSvc: WorkqueueService
+  ) {
+    this.headsData = headsSvc.getHeads();
+    this.wqData = wqSvc.getItems();
   }
 
   ngOnInit(): void {
     this.reloadHeads();
+    this.reloadWorkqueue();
   }
 
   ngOnDestroy(): void {
-    this.timerSubscription?.unsubscribe();
+    this.headsTimerSubscription?.unsubscribe();
     this.headsSubscription?.unsubscribe();
+    this.wqTimerSubscription?.unsubscribe();
+    this.wqSubscription?.unsubscribe();
   }
 
   private reloadHeads(): void {
@@ -73,7 +95,7 @@ export class StatusPageComponent implements OnInit, OnDestroy {
           return EMPTY;
         }),
         finalize(() => {
-          this.timerSubscription = timer(30000)
+          this.headsTimerSubscription = timer(30000)
             .pipe(take(1))
             .subscribe(() => {
               this.headsSubscription!.unsubscribe();
@@ -102,6 +124,27 @@ export class StatusPageComponent implements OnInit, OnDestroy {
           });
         }));
         this.entries = entries;
+      });
+  }
+
+  private reloadWorkqueue(): void {
+    this.wqSubscription = this.wqData
+      .pipe(
+        catchError((err) => {
+          console.error("error loading workqueue data: ", err);
+          return EMPTY;
+        }),
+        finalize(() => {
+          this.wqTimerSubscription = timer(10000)
+            .pipe(take(1))
+            .subscribe(() => {
+              this.wqSubscription!.unsubscribe();
+              this.reloadWorkqueue();
+            });
+        })
+      )
+      .subscribe((data: WQItem[]) => {
+        this.wqItems = data;
       });
   }
 

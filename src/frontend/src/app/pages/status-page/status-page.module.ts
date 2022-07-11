@@ -17,12 +17,14 @@ import { CommonModule } from '@angular/common';
 import { StatusPageRoutingModule } from './status-page-routing.module';
 import { StatusPageComponent } from './status-page.component';
 import { StatusCardComponent } from './status-card/status-card.component';
+import { WorkqueueCardComponent } from './workqueue-card/workqueue-card.component';
 
 
 @NgModule({
   declarations: [
     StatusPageComponent,
-    StatusCardComponent
+    StatusCardComponent,
+    WorkqueueCardComponent
   ],
   imports: [
     CommonModule,

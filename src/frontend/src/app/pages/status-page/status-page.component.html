@@ -13,7 +13,6 @@
 -->
 <div class="container-fluid">
   <div class="row mt-4">
-    <div class="col-1"></div>
 
     <div class="col-10">
 
@@ -24,6 +23,22 @@
       </div>
     </div>
 
-    <div class="col-1"></div>
+    <div class="col-2 border-start">
+      <div class="row">
+        <div class="col">
+          <span class="h4">Work Queue</span>
+
+          <div class="row row-cols-1 row-cols-md-1 mt-2">
+            <div class="col">
+              <div class="row" *ngFor="let it of wqItems">
+                <div class="col">
+                  <tstr-workqueue-card [item]="it"></tstr-workqueue-card>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
