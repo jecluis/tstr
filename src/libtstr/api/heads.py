@@ -17,14 +17,14 @@ from fastapi import APIRouter, Depends
 # from fastapi.logger import logger
 
 from libtstr.api import githubmgr
-from libtstr.gh import GithubHead, GithubMgr
+from libtstr.gh import GithubMgr, GithubBranch
 
 
 router = APIRouter(prefix="/heads", tags=["heads"])
 
 
 @router.get(
-    "/", name="Obtain currently open heads.", response_model=List[GithubHead]
+    "/", name="Obtain currently open heads.", response_model=List[GithubBranch]
 )
-async def get_heads(gh: GithubMgr = Depends(githubmgr)) -> List[GithubHead]:
+async def get_heads(gh: GithubMgr = Depends(githubmgr)) -> List[GithubBranch]:
     return await gh.get_heads()

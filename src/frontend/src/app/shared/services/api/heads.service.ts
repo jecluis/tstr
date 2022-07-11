@@ -16,12 +16,18 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 
 
-export type HeadEntry = {
-  head: string;
-  source: string;
+export type CommitEntry = {
   sha: string;
+  when: Date;
+};
+
+export type BranchEntry = {
+  name: string;
+  source: string;
+  commits: CommitEntry[];
   is_pull_request: boolean;
   id?: number;
+  state: string;
 };
 
 @Injectable({
@@ -31,7 +37,7 @@ export class HeadsService {
 
   constructor(private http: HttpClient) { }
 
-  getHeads(): Observable<HeadEntry[]> {
-    return this.http.get<HeadEntry[]>("/api/heads/");
+  getHeads(): Observable<BranchEntry[]> {
+    return this.http.get<BranchEntry[]>("/api/heads/");
   }
 }

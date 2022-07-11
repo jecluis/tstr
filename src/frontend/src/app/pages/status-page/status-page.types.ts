@@ -25,11 +25,16 @@ export enum StateEnum {
   Scheduled = 2,
 }
 
-export type StatusEntry = {
-  name: string;
-  type: "branch" | "pr";
+export type CommitStatusEntry = {
+  sha: string;
   benchmark?: BenchmarkEnum;
   s3testsPercent?: number;
   lastUpdated?: Date;
+};
+
+export type StatusEntry = {
+  name: string;
+  type: "branch" | "pr";
   state: StateEnum;
+  commits: CommitStatusEntry[];
 };

@@ -1,7 +1,11 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { catchError, EMPTY, finalize, Observable, Subscription, take, timer } from 'rxjs';
-import { HeadEntry, HeadsService } from 'src/app/shared/services/api/heads.service';
-import { BenchmarkEnum, StateEnum, StatusEntry } from './status-page.types';
+import {
+  BranchEntry,
+  CommitEntry,
+  HeadsService
+} from 'src/app/shared/services/api/heads.service';
+import { BenchmarkEnum, CommitStatusEntry, StateEnum, StatusEntry } from './status-page.types';
 
 @Component({
   selector: 'tstr-status-page',
@@ -14,30 +18,24 @@ export class StatusPageComponent implements OnInit, OnDestroy {
     {
       name: "s3gw",
       type: "branch",
-      benchmark: BenchmarkEnum.Baseline,
-      s3testsPercent: 50,
-      lastUpdated: new Date(),
+      commits: [],
       state: StateEnum.Done,
     },
     {
       name: "foo bar",
       type: "pr",
-      benchmark: BenchmarkEnum.AboveBaseline,
-      s3testsPercent: 55,
-      lastUpdated: new Date(),
+      commits: [],
       state: StateEnum.Done,
     },
     {
       name: "baz",
       type: "pr",
-      benchmark: undefined,
-      s3testsPercent: undefined,
-      lastUpdated: undefined,
+      commits: [],
       state: StateEnum.Running,
     }
   ];
 
-  private headsData: Observable<HeadEntry[]>;
+  private headsData: Observable<BranchEntry[]>;
   private headsSubscription?: Subscription;
   private timerSubscription?: Subscription;
 
@@ -70,19 +68,24 @@ export class StatusPageComponent implements OnInit, OnDestroy {
             });
         })
       )
-      .subscribe((data: HeadEntry[]) => {
+      .subscribe((data: BranchEntry[]) => {
         let entries: StatusEntry[] = [];
         data.forEach((entry => {
           let entryType: "pr" | "branch" = 
             (entry.is_pull_request ? "pr" : "branch");
-          let entryName = entry.source;
+          let entryName = entry.name;
           if (entry.is_pull_request) {
             entryName = `${entry.source} (#${entry.id})`;
           }
+          let commits: CommitStatusEntry[] = [];
+          entry.commits.forEach((c: CommitEntry) => {
+            commits.push({ sha: c.sha });
+          });
           entries.push({
             name: entryName,
             state: StateEnum.Scheduled,
             type: entryType,
+            commits: commits,
           });
         }));
         this.entries = entries;

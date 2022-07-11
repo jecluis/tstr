@@ -14,17 +14,17 @@ export class StatusCardComponent implements OnInit {
   ngOnInit(): void {
   }
 
-  isBaseline(): boolean {
-    return this.entry?.benchmark === BenchmarkEnum.Baseline;
-  }
+  // isBaseline(): boolean {
+  //   return this.entry?.benchmark === BenchmarkEnum.Baseline;
+  // }
 
-  isAboveBaseline(): boolean {
-    return this.entry?.benchmark === BenchmarkEnum.AboveBaseline;
-  }
+  // isAboveBaseline(): boolean {
+  //   return this.entry?.benchmark === BenchmarkEnum.AboveBaseline;
+  // }
 
-  isBelowBaseline(): boolean {
-    return this.entry?.benchmark === BenchmarkEnum.BelowBaseline;
-  }
+  // isBelowBaseline(): boolean {
+  //   return this.entry?.benchmark === BenchmarkEnum.BelowBaseline;
+  // }
 
   isDone(): boolean {
     return this.entry?.state === StateEnum.Done;
