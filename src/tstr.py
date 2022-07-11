@@ -22,16 +22,18 @@ from typing import Optional
 from fastapi import FastAPI
 from fastapi.logger import logger
 import uvicorn  # type: ignore
-from libtstr.gh import GithubMgr
 
 from libtstr.misc import setup_logging
 from libtstr.db import database
 from libtstr.state import TstrState
 from libtstr.config import TstrConfig
+from libtstr.wq import WorkQueue
+from libtstr.gh import GithubMgr
 
 # routers
 #
 from libtstr.api import heads
+from libtstr.api import wq
 
 
 api_tags = [
@@ -55,6 +57,7 @@ api = FastAPI(
 
 
 api.include_router(heads.router)
+api.include_router(wq.router)
 app.mount("/api", api, name="API")
 
 
@@ -65,13 +68,16 @@ _main_task: Optional[asyncio.Task] = None
 async def tstr_main_task(app: FastAPI, state: TstrState) -> None:
 
     state.github = GithubMgr(state.config.gh)
+    state.workqueue = WorkQueue()
     await state.github.start()
+    state.workqueue.start()
 
     while not _shutting_down:
         logger.debug("tstr main task")
         await asyncio.sleep(1.0)
 
     logger.info("shutting down main tstr task.")
+    await state.workqueue.stop()
     await state.github.stop()
 
 

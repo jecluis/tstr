@@ -15,6 +15,7 @@ from fastapi import Request, Depends
 
 from libtstr.state import TstrState
 from libtstr.gh import GithubMgr
+from libtstr.wq import WorkQueue
 
 
 async def tstr_state(req: Request) -> TstrState:
@@ -23,3 +24,7 @@ async def tstr_state(req: Request) -> TstrState:
 
 async def githubmgr(state: TstrState = Depends(tstr_state)) -> GithubMgr:
     return state.github
+
+
+async def workqueue(state: TstrState = Depends(tstr_state)) -> WorkQueue:
+    return state.workqueue

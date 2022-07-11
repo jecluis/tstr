@@ -11,16 +11,20 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Affero General Public License for more details.
 
-import databases
+from typing import List
+from fastapi import APIRouter, Depends
 
-from libtstr.gh import GithubMgr
-from libtstr.config import TstrConfig
-from libtstr.wq import WorkQueue
+# from fastapi.logger import logger
+
+from libtstr.api import workqueue
+from libtstr.wq import WQItem, WorkQueue
 
 
-class TstrState:
+router = APIRouter(prefix="/wq", tags=["workqueue"])
 
-    config: TstrConfig
-    database: databases.Database
-    github: GithubMgr
-    workqueue: WorkQueue
+
+@router.get(
+    "/", name="Obtain current workqueue items", response_model=List[WQItem]
+)
+async def get_heads(wq: WorkQueue = Depends(workqueue)) -> List[WQItem]:
+    return await wq.get_entries()
