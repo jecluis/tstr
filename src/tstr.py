@@ -21,6 +21,7 @@ import sys
 from typing import Optional
 from fastapi import FastAPI
 from fastapi.logger import logger
+from fastapi.staticfiles import StaticFiles
 import uvicorn  # type: ignore
 
 from libtstr.misc import setup_logging
@@ -59,6 +60,8 @@ api = FastAPI(
 api.include_router(heads.router)
 api.include_router(wq.router)
 app.mount("/api", api, name="API")
+
+app.mount("/", StaticFiles(directory="frontend/dist", html=True), name="static")
 
 
 _shutting_down: bool = False
