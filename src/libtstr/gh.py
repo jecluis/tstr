@@ -116,9 +116,12 @@ class GithubMgr:
         closed_branches = 0
         reopened_branches = 0
 
+        logger.debug("update heads from github")
+
         gh_heads = await self._get_heads()
         for ghead in gh_heads:
             if ghead.head in self._branches_by_name:
+                logger.debug(f"head {ghead.head} found")
 
                 existing: Branch = self._branches_by_name[ghead.head]
                 if existing.is_closed:
@@ -168,6 +171,7 @@ class GithubMgr:
                     await existing.update()
                     closed_branches += 1
             else:
+                logger.debug(f"new branch/PR: {ghead.head}")
                 # new branch/PR
                 #
                 if ghead.state == "closed":
@@ -190,7 +194,7 @@ class GithubMgr:
                 self._branches_by_name[new_branch.name] = new_branch
                 self._heads.append(new_head)
                 if new_head.sha not in self._heads_by_sha:
-                    self._heads_by_sha[new_head.sha]
+                    self._heads_by_sha[new_head.sha] = []
                 self._heads_by_sha[new_head.sha].append(new_head)
                 await new_branch.save()
                 await new_head.save()
