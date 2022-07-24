@@ -117,8 +117,6 @@ def main(file: Path, version: str, url: str, token: str):
     warpcmd: Optional[WarpCmd] = None
     maxthreads: int = 0
 
-    version = sys.argv[2]
-
     if token is None or url is None:
         print("please specify TSTR_REPORT_TOKEN and TSTR_REPORT_URL.")
         sys.exit(1)
