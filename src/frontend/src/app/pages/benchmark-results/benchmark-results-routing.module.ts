@@ -13,15 +13,15 @@
  */
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { StatusPageComponent } from './status-page.component';
+import { BenchmarkResultsComponent } from './benchmark-results.component';
 
 const routes: Routes = [
-  { path: "", redirectTo: "status" },
-  { path: "status", component: StatusPageComponent },
+  { path: "", redirectTo: "benchmark" },
+  { path: "benchmark", component: BenchmarkResultsComponent },
 ];
 
 @NgModule({
   imports: [RouterModule.forChild(routes)],
   exports: [RouterModule]
 })
-export class StatusPageRoutingModule { }
+export class BenchmarkResultsRoutingModule { }

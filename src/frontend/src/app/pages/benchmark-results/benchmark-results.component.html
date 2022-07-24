@@ -1,0 +1,103 @@
+<!--
+ tstr - testing stuff
+ Copyright (C) 2022 SUSE LLC
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU Affero General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+ 
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU Affero General Public License for more details.
+-->
+<div class="container-fluid">
+  <div class="row mt-4">
+
+    <div class="col-1"></div>
+
+    <div class="col-10">
+
+      <div class="row" *ngFor="let kv of per_test_type|keyvalue">
+        <div class="col-12">
+          <div>
+            <span class="h5">{{kv.value.workload}}</span>
+            <span class="ms-4 font-monospace">{{kv.value.duration}}</span>
+            <span class="ms-4 font-monospace">{{kv.value.object_size}}</span>
+            <span class="ms-4 font-monospace">{{kv.value.num_objects}} objs</span>
+          </div>
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th scope="col">#</th>
+                <th scope="col">version</th>
+                <th scope="col">date</th>
+                <th scope="col">threads</th>
+                <th scope="col">GET</th>
+                <th scope="col">PUT</th>
+                <th scope="col">DELETE</th>
+                <th scope="col">STAT</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let res of kv.value.entries">
+                <th scope="row">{{res.result.id}}</th>
+                <td>{{res.result.version}}</td>
+                <td>{{res.result.date}}</td>
+                <td>{{res.result.threads}}</td>
+                <td>
+                  <!-- GET -->
+                  <div *ngIf="hasOp(res, 'get')">
+                    <div class="row">
+                      <span>{{toSI(res.ops["get"].bytes_per_sec)}}/s</span>
+                    </div>
+                    <div class="row">
+                      <span>{{res.ops["get"].objs_per_sec}} obj/s</span>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <!-- PUT -->
+                  <div *ngIf="hasOp(res, 'put')">
+                    <div class="row">
+                      <span>{{toSI(res.ops["put"].bytes_per_sec)}}/s</span>
+                    </div>
+                    <div class="row">
+                      <span>{{res.ops["put"].objs_per_sec}} obj/s</span>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <!-- DELETE -->
+                  <div *ngIf="hasOp(res, 'delete')">
+                    <div class="row">
+                      <span>{{res.ops["delete"].ops_per_sec}} ops/s</span>
+                    </div>
+                    <div class="row">
+                      <span>{{res.ops["delete"].objs_per_sec}} obj/s</span>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <!-- STAT -->
+                  <div *ngIf="hasOp(res, 'stat')">
+                    <div class="row">
+                      <span>{{res.ops["stat"].ops_per_sec}} ops/s</span>
+                    </div>
+                    <div class="row">
+                      <span>{{res.ops["stat"].objs_per_sec}} obj/s</span>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="col-1"></div>
+
+  </div>
+</div>

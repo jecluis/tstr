@@ -12,16 +12,20 @@
  * GNU Affero General Public License for more details.
  */
 import { NgModule } from '@angular/core';
-import { RouterModule, Routes } from '@angular/router';
-import { StatusPageComponent } from './status-page.component';
+import { CommonModule } from '@angular/common';
 
-const routes: Routes = [
-  { path: "", redirectTo: "status" },
-  { path: "status", component: StatusPageComponent },
-];
+import { BenchmarkResultsRoutingModule } from './benchmark-results-routing.module';
+import { BenchmarkResultsComponent } from './benchmark-results.component';
+
+
 
 @NgModule({
-  imports: [RouterModule.forChild(routes)],
-  exports: [RouterModule]
+  declarations: [
+    BenchmarkResultsComponent,
+  ],
+  imports: [
+    CommonModule,
+    BenchmarkResultsRoutingModule,
+  ]
 })
-export class StatusPageRoutingModule { }
+export class BenchmarkResultsModule { }
