@@ -11,12 +11,38 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Affero General Public License for more details.
 
-from pydantic import BaseModel, Field
+from typing import List
+from datetime import datetime as dt
+from pydantic import BaseModel
 
-from libtstr.gh import GithubConfig
+
+class Op(BaseModel):
+    name: str
+    count: int
+    duration: int
+    num_objects: int
+    num_bytes: int
 
 
-class TstrConfig(BaseModel):
-    gh: GithubConfig
-    log_level: str = Field(default="INFO")
-    access_token: str
+class OpResult(BaseModel):
+    name: str
+    percent: int
+    ops_per_sec: float
+    objs_per_sec: float
+    bytes_per_sec: int
+
+
+class WarpCmd(BaseModel):
+    duration: str
+    objects: int
+    objsize: str
+    workload: str
+
+
+class Result(BaseModel):
+    version: str
+    date: dt
+    threads: int
+    duration: float
+    details: WarpCmd
+    ops: List[OpResult]

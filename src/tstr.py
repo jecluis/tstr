@@ -19,9 +19,11 @@ import os
 from pathlib import Path
 import sys
 from typing import Optional
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, status
 from fastapi.logger import logger
 from fastapi.staticfiles import StaticFiles
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
 import uvicorn  # type: ignore
 
 from libtstr.misc import setup_logging
@@ -35,6 +37,7 @@ from libtstr.gh import GithubMgr
 #
 from libtstr.api import heads
 from libtstr.api import wq
+from libtstr.api import bench
 
 
 api_tags = [
@@ -46,6 +49,7 @@ api_tags = [
         "name": "heads",
         "description": "Branches and PR related operations.",
     },
+    {"name": "benchmark", "description": "Benchmark results."},
 ]
 
 app = FastAPI(docs_url=None)
@@ -59,6 +63,7 @@ api = FastAPI(
 
 api.include_router(heads.router)
 api.include_router(wq.router)
+api.include_router(bench.router)
 app.mount("/api", api, name="API")
 
 app.mount("/", StaticFiles(directory="frontend/dist", html=True), name="static")
@@ -125,6 +130,18 @@ async def on_shutdown():
     state: TstrState = api.state.tstr
     if state.database.is_connected:
         await state.database.disconnect()
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(
+    request: Request, exc: RequestValidationError
+):
+    exc_str = f"{exc}".replace("\n", " ").replace("  ", " ")
+    logger.error(f"{request}: {exc_str}")
+    content = {"status_code": 10422, "message": exc_str, "data": None}
+    return JSONResponse(
+        content=content, status_code=status.HTTP_422_UNPROCESSABLE_ENTITY
+    )
 
 
 # uvicorn.run(app, host="0.0.0.0", port=31337)  # type: ignore

@@ -11,7 +11,7 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Affero General Public License for more details.
 
-from fastapi import Request, Depends
+from fastapi import Request, Depends, Header, HTTPException
 
 from libtstr.state import TstrState
 from libtstr.gh import GithubMgr
@@ -28,3 +28,10 @@ async def githubmgr(state: TstrState = Depends(tstr_state)) -> GithubMgr:
 
 async def workqueue(state: TstrState = Depends(tstr_state)) -> WorkQueue:
     return state.workqueue
+
+
+async def access_token_required(
+    state: TstrState = Depends(tstr_state), x_token: str = Header()
+) -> None:
+    if x_token != state.config.access_token:
+        raise HTTPException(status_code=400, detail="Invalid token")
